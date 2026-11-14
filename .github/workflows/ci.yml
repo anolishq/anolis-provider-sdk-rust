@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: provider-sdk-rust-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  HARNESS_WHEEL: "anolis-protocol[conformance] @ https://github.com/anolishq/anolis-protocol/releases/download/v1.10.0/anolis_protocol-1.10.0-py3-none-any.whl"
+
+jobs:
+  check:
+    name: Format, lint, generated bindings
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Toolchain
+        run: rustup toolchain install stable --profile minimal --component rustfmt,clippy && rustup default stable
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Lint
+        run: cargo clippy --locked --all-targets --all-features -- -D warnings
+      - name: Generated bindings match proto/
+        run: |
+          cargo run --locked --quiet -p protogen
+          if [ -n "$(git status --porcelain -- src/proto)" ]; then
+            git status --short -- src/proto
+            echo "::error::src/proto/ is out of date: run just gen and commit it"
+            exit 1
+          fi
+
+  proto:
+    name: proto/ matches the pinned anolis-protocol release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: extractions/setup-just@f8a3cce218d9f83db3a2ecd90e41ac3de6cdfd9b # v3
+      - run: just proto-check
+
+  test:
+    name: Tests and conformance (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Toolchain
+        run: rustup toolchain install stable --profile minimal && rustup default stable
+      - name: Tests
+        run: cargo test --locked
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: "3.13"
+      - name: Pull anolis-protocol[conformance]
+        run: python -m pip install "$HARNESS_WHEEL"
+      # The reference provider under the harness: an SDK change that breaks the
+      # protocol fails here. No failures, and no skip beyond EXPECTED_SKIPS
+      # (none) in scripts/conformance.py.
+      - name: Conformance against the reference provider
+        run: |
+          cargo build --locked --example anolis-provider-reference
+          python scripts/conformance.py target/debug/examples/anolis-provider-reference
+
+  version-sync:
+    uses: anolishq/.github/.github/workflows/version-sync.yml@f4817837f29993c35b5350fbb5dfe2563437fcde # v2
+
+  docs:
+    name: Docs
+    permissions:
+      contents: read
+    uses: anolishq/.github/.github/workflows/docs-check.yml@f4817837f29993c35b5350fbb5dfe2563437fcde # v2
+
+  ok:
+    name: ok
+    if: always()
+    needs: [check, proto, test, version-sync, docs]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Evaluate job results
+        run: |
+          echo "Job results: ${{ toJSON(needs.*.result) }}"
+      - uses: anolishq/.github/.github/actions/require-needs-passed@f4817837f29993c35b5350fbb5dfe2563437fcde # v2
+        with:
+          results: ${{ join(needs.*.result, ' ') }}

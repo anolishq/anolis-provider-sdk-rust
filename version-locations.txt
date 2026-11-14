@@ -1,0 +1,8 @@
+# version-locations.txt for anolis-provider-sdk-rust
+Cargo.toml:^version = "([0-9]+\.[0-9]+\.[0-9]+)"
+README.md:\*\*Status: v([0-9]+\.[0-9]+\.[0-9]+)
+
+# The anolis-protocol release proto/ is vendored from and the harness CI runs.
+protocol|justfile:^protocol := "([0-9]+\.[0-9]+\.[0-9]+)"
+protocol|.github/workflows/ci.yml:releases/download/v([0-9]+\.[0-9]+\.[0-9]+)/
+protocol|README.md:anolis-protocol v([0-9]+\.[0-9]+\.[0-9]+)
