@@ -1,0 +1,28 @@
+[package]
+name = "anolis-provider-sdk"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+description = "Rust SDK for Anolis device providers (ADPP v1)"
+repository = "https://github.com/anolishq/anolis-provider-sdk-rust"
+publish = false
+
+[workspace]
+members = [".", "tools/protogen"]
+
+[dependencies]
+jsonschema = { version = "0.61.2", default-features = false }
+prost = "0.14.6"
+prost-types = "0.14.6"
+schemars = "1.2.3"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+serde_norway = "0.9.42"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2.191"
+signal-hook = "0.4.6"
+
+[[example]]
+name = "anolis-provider-reference"
+path = "examples/reference.rs"
