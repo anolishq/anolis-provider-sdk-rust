@@ -8,18 +8,26 @@ use std::sync::OnceLock;
 
 /// The reference provider, built from the current sources. `cargo test` does
 /// not always rebuild an example before running a filtered test, so build it
-/// here rather than test a stale binary.
+/// here rather than test a stale binary, and take its path from cargo's own
+/// report: where cargo puts it differs between cargo versions.
 fn reference() -> PathBuf {
     static BIN: OnceLock<PathBuf> = OnceLock::new();
     BIN.get_or_init(|| {
-        let status = Command::new(env!("CARGO"))
-            .args(["build", "--quiet", "--example", "anolis-provider-reference", "--manifest-path"])
+        let out = Command::new(env!("CARGO"))
+            .args(["build", "--quiet", "--example", "anolis-provider-reference"])
+            .args(["--message-format=json-render-diagnostics", "--manifest-path"])
             .arg(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml"))
-            .status()
+            .stderr(std::process::Stdio::inherit())
+            .output()
             .unwrap();
-        assert!(status.success(), "building the reference provider failed");
-        let deps = std::env::current_exe().unwrap().parent().unwrap().to_path_buf();
-        deps.parent().unwrap().join("examples").join("anolis-provider-reference")
+        assert!(out.status.success(), "building the reference provider failed");
+        String::from_utf8(out.stdout)
+            .unwrap()
+            .lines()
+            .filter_map(|line| serde_json::from_str::<serde_json::Value>(line).ok())
+            .filter(|m| m["reason"] == "compiler-artifact" && m["target"]["name"] == "anolis-provider-reference")
+            .find_map(|m| m["executable"].as_str().map(PathBuf::from))
+            .expect("cargo reported no executable for the reference provider")
     })
     .clone()
 }
