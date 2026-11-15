@@ -242,4 +242,6 @@ python3 scripts/conformance.py target/release/<your-provider> .harness/bin/anoli
 
 The harness cannot see everything. It checks the status a call returns, not
 whether the call moved anything, so test the behaviour of your own functions
-in your own tests.
+in your own tests. `Args` can be built there from name and value pairs,
+`Args::from_iter([("on", Value::from(true))])`; the SDK does not validate
+arguments built that way, so pass what the declaration allows.

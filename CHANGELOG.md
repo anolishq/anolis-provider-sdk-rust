@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `Args` implements `FromIterator<(K, V)>` for names that convert into a
+  `String` and values that convert into a `Value`, so a provider can call its
+  own `call` with arguments in its tests. These arguments are not validated;
+  in a session the SDK still validates every call before `call` runs (#5).
+
 ## [0.1.0] — 2026-11-15
 
 ### Added
