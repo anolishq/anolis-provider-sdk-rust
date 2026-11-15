@@ -2,6 +2,8 @@
 name = "anolis-provider-sdk"
 version = "0.1.1"
 edition = "2024"
+# let chains (src/model.rs); the msrv job in CI builds on exactly this.
+rust-version = "1.88"
 license = "Apache-2.0"
 description = "Rust SDK for Anolis device providers (ADPP v1)"
 repository = "https://github.com/anolishq/anolis-provider-sdk-rust"

@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `rust-version = "1.88"`: the SDK uses `let` chains, stable since Rust 1.88,
+  so an older toolchain now stops with cargo's version message rather than
+  `E0658`. CI checks the workspace on 1.88 itself.
+
 ## [0.1.1] — 2026-11-15
 
 ### Added

@@ -80,6 +80,17 @@ jobs:
           cargo build --locked --example anolis-provider-reference
           python scripts/conformance.py target/debug/examples/anolis-provider-reference
 
+  msrv:
+    name: Builds on Rust 1.88 (rust-version)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Toolchain
+        run: rustup toolchain install 1.88 --profile minimal && rustup default 1.88
+      - name: Check
+        run: cargo check --locked --workspace --all-targets
+
   version-sync:
     uses: anolishq/.github/.github/workflows/version-sync.yml@f4817837f29993c35b5350fbb5dfe2563437fcde # v2
 
@@ -92,7 +103,7 @@ jobs:
   ok:
     name: ok
     if: always()
-    needs: [check, proto, test, version-sync, docs]
+    needs: [check, proto, test, msrv, version-sync, docs]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

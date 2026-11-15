@@ -37,7 +37,8 @@ and `call` are synchronous.
 
 ## Use it
 
-The SDK is not on crates.io. Depend on it by git tag:
+The SDK is not on crates.io, and needs Rust 1.88 or later. Depend on it by
+git tag:
 
 ```toml
 [dependencies]
