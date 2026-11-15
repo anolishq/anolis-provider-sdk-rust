@@ -181,6 +181,51 @@ At startup the SDK runs the same checks. On an unmet requirement the provider
 stays up, not ready and with no devices, and reports what is unmet, so the
 runtime can show why.
 
+## Vendor drivers
+
+A provider for one vendor's boards drives them through a driver for those
+boards, so a user of the boards finds code they already know, and the provider
+stays a thin layer over it. Three rules keep the provider from becoming a fork
+of a driver:
+
+**A driver the vendor lacks is its own crate, not a board module.** When no
+driver exists for a chip, write one as a separate crate, not inside the
+provider's code for one board:
+
+- write it against the vendor's bus interface, or `embedded-hal`'s, in the
+  vendor's conventions where it has them, so it can be offered as it stands;
+- it depends on nothing in the provider: as a separate crate it cannot reach
+  the provider's modules, which keeps it usable without the SDK;
+- open an issue in the provider repository to track offering it, and offer it
+  once it has run on real hardware;
+- delete it when the vendor publishes one, and switch to that.
+
+**A vendor with no driver in this language gets one of its own, in its own
+repository.** When the vendor publishes drivers only for other languages, the
+driver is written in-house as a crate with its own repository, releases and
+tests, and the provider depends on it pinned by tag (by commit until it is
+tagged). [modulino-driver](https://github.com/CameronBrooks11/modulino-driver),
+under anolis-provider-modulino, is the example. Its protocol facts carry their
+sources, and a simulated bus behind a feature lets the provider run the real
+driver in mock mode.
+
+**A bug in a driver is reported upstream and worked around here, marked for
+removal:**
+
+- Report it to the driver's maintainers as an issue, with a reproduction that
+  uses only the driver, after checking their tracker for an existing report.
+  Open a pull request only once the issue is acknowledged or the fix is
+  trivial.
+- Work around it in the board's code, behind the driver's public API. Never
+  patch a vendored or `[patch]`ed copy of the driver. A workaround that would
+  amount to rewriting the driver means writing a driver crate instead.
+- Put a link to the upstream issue in a comment at the workaround, and name
+  the issue in the pull request that adds it.
+- Add a test that pins the bug: it calls the driver directly, asserts the
+  buggy behaviour, and links the same issue. When a dependency update brings
+  the fix, that test fails, and it is the signal to remove the workaround and
+  the test together.
+
 ## Run the conformance harness
 
 The anolis-protocol harness is the oracle: a provider is conformant when it
