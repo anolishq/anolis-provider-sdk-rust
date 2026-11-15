@@ -3,9 +3,10 @@
 A Rust SDK for writing [Anolis Device Provider Protocol](https://github.com/anolishq/anolis-protocol)
 (ADPP) device providers.
 
-> **Status: v0.1.0, unreleased.** The SDK core and a synthetic reference
-> provider pass the anolis-protocol v1.10.0 conformance harness at level 2
-> with no failures and no skips (`just test`); CI runs it on x86_64 and arm64.
+> **Status: v0.1.0.** The SDK core and a synthetic reference provider
+> pass the anolis-protocol v1.10.0 conformance harness at level 2
+> with no failures and no skips, locally (`just test`) and in CI on x86_64
+> and arm64.
 
 Declare each device type once as data, implement `Provider`, and end the
 binary with `run`. The SDK speaks ADPP v1 over framed stdio and implements the
