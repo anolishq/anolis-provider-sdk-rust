@@ -69,6 +69,25 @@ impl Args {
     }
 }
 
+/// Arguments for calling a provider's own `call` in its tests.
+///
+/// Arguments built this way are not validated against a declaration. In a
+/// session the SDK builds `Args` itself, from a call it has validated.
+///
+/// ```
+/// use anolis_provider_sdk::{Args, Value};
+///
+/// let args = Args::from_iter([("on", Value::from(true)), ("level", Value::from(3u8))]);
+/// assert_eq!(args.bool("on"), Some(true));
+/// assert_eq!(args.u64("level"), Some(3));
+/// assert_eq!(args.bool("missing"), None);
+/// ```
+impl<K: Into<String>, V: Into<Value>> FromIterator<(K, V)> for Args {
+    fn from_iter<I: IntoIterator<Item = (K, V)>>(iter: I) -> Self {
+        Args(iter.into_iter().map(|(k, v)| (k.into(), v.into())).collect())
+    }
+}
+
 /// What a call knows besides its arguments.
 #[derive(Clone, Debug, Default)]
 pub struct CallContext {
