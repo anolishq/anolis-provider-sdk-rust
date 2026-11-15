@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-11-16
+
 ### Added
 
 - `Args` implements `FromIterator<(K, V)>` for names that convert into a

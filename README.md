@@ -3,7 +3,7 @@
 A Rust SDK for writing [Anolis Device Provider Protocol](https://github.com/anolishq/anolis-protocol)
 (ADPP) device providers.
 
-> **Status: v0.1.0.** The SDK core and a synthetic reference provider
+> **Status: v0.1.1.** The SDK core and a synthetic reference provider
 > pass the anolis-protocol v1.10.0 conformance harness at level 2
 > with no failures and no skips, locally (`just test`) and in CI on x86_64
 > and arm64.
@@ -41,7 +41,7 @@ The SDK is not on crates.io. Depend on it by git tag:
 
 ```toml
 [dependencies]
-anolis-provider-sdk = { git = "https://github.com/anolishq/anolis-provider-sdk-rust", tag = "v0.1.0" }
+anolis-provider-sdk = { git = "https://github.com/anolishq/anolis-provider-sdk-rust", tag = "v0.1.1" }
 schemars = "1"
 serde = { version = "1", features = ["derive"] }
 ```
